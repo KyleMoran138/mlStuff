@@ -5,15 +5,18 @@ let predictions = [];
 let trainModelButton;
 let resolutionSlider;
 let runPredictionMapButton;
+let clearPredictionMapButton;
 let isTrained = false;
 let predictionResolution = 25;
+let resolutionP;
 
 function setup(){
     createCanvas(700, 700);
     trainModelButton = createButton('Train');
     runPredictionMapButton = createButton('Predict');
-    createP('Prediction resolution')
-    resolutionSlider = createSlider(10, 100, 50);
+    clearPredictionMapButton = createButton('Clear Predict');
+    resolutionP = createP('Prediction resolution')
+    resolutionSlider = createSlider(5, 100, 50);
 
     trainModelButton.mousePressed(() => {
         model.normalizeData();
@@ -28,6 +31,10 @@ function setup(){
     runPredictionMapButton.mousePressed(() => {
         predictions = [];
         predictAll();
+    });
+
+    clearPredictionMapButton.mousePressed(() => {
+        predictions = [];
     });
 
     let mlOptions = {
@@ -53,15 +60,17 @@ function keyPressed(){
 
 function predictAll(){
     predictionResolution = resolutionSlider.value();
-    for(let x = 0; x < 750/predictionResolution; x++){
-        for(let y = 0; y < 750/predictionResolution; y++){
+    const width = (700+predictionResolution);
+    const height = (700+predictionResolution);
+    for(let x = 0; x < width / predictionResolution; x++){
+        for(let y = 0; y < height / predictionResolution; y++){
             model.classify({x: x*predictionResolution, y: y*predictionResolution}, (err, result) => {
                 predictions.push({
                     x: x * predictionResolution,
                     y: y * predictionResolution,
                     label: result[0].label
                 });
-            })
+            });
         }
     }
 }
@@ -91,9 +100,13 @@ function drawPoint(xPos, yPos, label, background){
     text(label, xPos, yPos);
 }
 
-function drawRect(x, y, label){
-    stroke(0);
-    noFill();
+function drawRect(x, y, label, background){
+    noStroke()
+    if(!background){
+        noFill()
+    }else{
+        fill(...background)
+    }
     rect(x,y,predictionResolution,predictionResolution);
     fill(0);
     noStroke();
@@ -101,11 +114,27 @@ function drawRect(x, y, label){
 }
 
 function draw(){
+    resolutionP.html(`Prediction resolution: ${resolutionSlider.value()}px`)
     background(200);
     currentPoints.forEach(pointObj => {
         drawPoint(pointObj.x, pointObj.y, pointObj.label, pointObj.color);
     });
     predictions.forEach(pointObj => {
-        drawRect(pointObj.x, pointObj.y, pointObj.label);
+        let color = [];
+        switch(pointObj.label){
+            case('C'):
+            color = [255, 0, 0, 50]
+            break;
+            case('E'):
+            color = [0, 255, 0, 50]
+            break;
+            case('D'):
+            color = [0, 0, 255, 50]
+            break;
+            default:
+            color = [255, 0, 255, 50]
+            break;
+        }
+        drawRect(pointObj.x, pointObj.y, '', color);
     });
 }
