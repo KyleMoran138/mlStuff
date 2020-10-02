@@ -116,9 +116,6 @@ function drawRect(x, y, label, background){
 function draw(){
     resolutionP.html(`Prediction resolution: ${resolutionSlider.value()}px`)
     background(200);
-    currentPoints.forEach(pointObj => {
-        drawPoint(pointObj.x, pointObj.y, pointObj.label, pointObj.color);
-    });
     predictions.forEach(pointObj => {
         let color = [];
         switch(pointObj.label){
@@ -136,5 +133,8 @@ function draw(){
             break;
         }
         drawRect(pointObj.x, pointObj.y, '', color);
+    });
+    currentPoints.forEach(pointObj => {
+        drawPoint(pointObj.x, pointObj.y, pointObj.label, pointObj.color);
     });
 }
